@@ -18,7 +18,7 @@ aUpTo n = do
   b <- [1..a]
   let s = cube a + cube b
   -- doing upper half (c from ceil) here is faster than lower half (d to floor)
-  c <- [cbrtCeil $ s `div` 2 .. a - 1]
+  c <- [cbrtCeil $ (s + 1) `div` 2 .. a - 1]
   guard $ IS.member (s - cube c) cubeS
   return (a, b, c)
   where
