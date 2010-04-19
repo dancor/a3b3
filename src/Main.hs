@@ -1,52 +1,33 @@
 module Main where
 
--- a^3 + b^3 = c^3 + d^3
--- = (a + b)(a + q b)(a + q^2 b)
--- where q is a third root of unity.
--- we can factor the two sides in Z[q].
+import Control.Monad
+import Data.Maybe
+import System.Environment
+import qualified Data.IntMap as IM
+import qualified Data.IntSet as IS
+import qualified Foreign.C.Math.Double as F
 
--- (a + b)^3 = a^3 + b^3 + 3ab^2 + 3a^2b
+-- will i ever be fast enough to need Integer even on 64bit?  prob not
+type I = Int
 
--- looking for primitive examples, we can assume:
--- - a > c and a = b and c > d, or
--- - a > c and a > b and c = d, or
--- - a > c and a > b and c > d.
--- we also know that b <= d.
--- if c = d, a^3 + b^3 = 2c^3.
+cbrtCeil = ceiling . F.cbrt . fromIntegral
 
--- mod 2:
--- a = b (mod 2)
--- mod 3:
--- a + b + c = 0 (mod 3)
--- mod 5:
--- 2 -> -2
--- mod 7:
--- 2 -> 1
--- 3 -> -1
--- mod 11:
--- 2 -> -3
--- 3 -> 5
--- 4 -> -2
--- 5 -> 3
-
--- since a = b + 2k,
--- a^3 + b^3 =
--- 2b^3 + 8k^3 + 6b^2k + 12bk^2 = 2c^3
--- we've got nothing
-
-type I = Integer
-type R = (I, I, I, I)
-
-allWithACB :: I -> I -> I -> [R]
-allWithACB a c b =
-
-allWithAC :: I -> I -> [R]
-allWithAC a c = concatMap (allWithACB a c) [1 .. a]
-
-allWithA :: I -> [R]
-allWithA a = concatMap (allWithAC cubes a) [1 .. a - 1]
-  where cubes = [1 ..
+a2b2UpTo :: I -> [(I, I, I)]
+a2b2UpTo n = do
+  a <- [1..n]
+  b <- [1..a]
+  let s = cube a + cube b
+  -- doing upper half (c from ceil) here is faster than lower half (d to floor)
+  c <- [cbrtCeil $ s `div` 2 .. a - 1]
+  guard $ IS.member (s - cube c) cubeS
+  return (a, b, c)
+  where
+  cubeL = map (^3) [1..n]
+  cubeS = IS.fromList cubeL
+  cubeM = IM.fromDistinctAscList $ zip [1..n] cubeL
+  cube = fromJust . flip IM.lookup cubeM
 
 main :: IO ()
 main = do
-  putStrLn "hi"
+  [n] <- getArgs
+  putStr . unlines . map show . a2b2UpTo $ read n
