@@ -12,8 +12,8 @@ type I = Int
 
 cbrtCeil = ceiling . F.cbrt . fromIntegral
 
-a2b2UpTo :: I -> [(I, I, I)]
-a2b2UpTo n = do
+aUpTo :: I -> [(I, I, I)]
+aUpTo n = do
   a <- [1..n]
   b <- [1..a]
   let s = cube a + cube b
@@ -30,4 +30,4 @@ a2b2UpTo n = do
 main :: IO ()
 main = do
   [n] <- getArgs
-  putStr . unlines . map show . a2b2UpTo $ read n
+  putStr . unlines . map show . aUpTo $ read n
