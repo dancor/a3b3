@@ -1,0 +1,12 @@
+name:           a3b3
+version:        0.1
+license:        BSD3
+license-file:   LICENSE
+author:         dan corson <danl@alum.mit.edu>
+synopsis:       a^3 + b^3 = c^3 + d^3
+build-type:     Simple
+build-depends:  base >= 4, containers, cmath
+
+executable:     a3b3
+main-is:        Main.hs
+hs-source-dirs: src
