@@ -12,27 +12,29 @@ import qualified Foreign.C.Math.Double as F
 type I = Int
 type R = (I, I, I, I)
 
+cbrt :: I -> I
 cbrt = round . F.cbrt . fromIntegral
 
-findCDs :: (I, I) -> [R]
-findCDs (a, b) = do
+findCDs :: (I -> I) -> IM.IntMap I -> (I, I) -> [(I, I, I, I)]
+findCDs cube cubeRev (a, b) = do
   let s = cube a + cube b
   c <- [cbrt $ (s + 1) `div` 2 .. a - 1]
   let d3 = s - cube c
   case IM.lookup d3 cubeRev of
     Just d -> return (a, b, c, d)
     _ -> mempty
-  where
-  cubeL = map (^3) [1..a]
-  cubeM = IM.fromDistinctAscList $ zip [1..a] cubeL
-  cubeRev = IM.fromDistinctAscList $ zip cubeL [1..a]
-  cube = fromJust . flip IM.lookup cubeM
 
 main :: IO ()
 main = do
   [f] <- getArgs
   aBs <- map ((\ [a, b] -> (read a, read b)) . words) . lines <$> readFile f
-  putStr . unlines . map myShow $ concatMap findCDs aBs
+  let
+    n = maximum $ map fst aBs
+    cubeL = map (^3) [1..n]
+    cubeM = IM.fromDistinctAscList $ zip [1..n] cubeL
+    cubeRev = IM.fromDistinctAscList $ zip cubeL [1..n]
+    cube = fromJust . flip IM.lookup cubeM
+  putStr . unlines . map myShow $ concatMap (findCDs cube cubeRev) aBs
 
 myShow :: R -> String
 myShow (a, b, c, d) = show a ++ " " ++ show b ++ " " ++ show c ++ " " ++ show d
